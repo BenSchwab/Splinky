@@ -1,7 +1,7 @@
 package com.apphelionstudios.splinky;
 
 
-import com.apphelionstudios.splinky.GameView.Coordinate;
+
 
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -15,14 +15,16 @@ public class ShrinkRaySprite extends Sprite {
 	public int width;
 	public int height;
 	public int turns;
+	private EnemySprite target;
 
-	public ShrinkRaySprite(Resources resource, Coordinate c){
+	public ShrinkRaySprite(Resources resource, Coordinate c, EnemySprite target){
 		shrinkRay = BitmapFactory.decodeResource(resource, R.drawable.shrinkray);
 		x=c.x;
 		y=c.y;
 		width = shrinkRay.getWidth();
 		height = shrinkRay.getHeight();
 		turns =0;
+		this.target = target;
 	}
 	
 	@Override
@@ -54,6 +56,11 @@ public class ShrinkRaySprite extends Sprite {
 	public int getTurns() {
 		// TODO Auto-generated method stub
 		return turns;
+	}
+
+	public EnemySprite getTarget() {
+		// TODO Auto-generated method stub
+		return target;
 	}
 
 }

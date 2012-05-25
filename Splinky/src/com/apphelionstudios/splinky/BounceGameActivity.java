@@ -16,14 +16,18 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.os.PowerManager;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup;
 import android.view.animation.Animation;
+import android.view.animation.Animation.AnimationListener;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
-public class BounceGameActivity extends Activity implements OnClickListener {
+public class BounceGameActivity extends Activity implements OnClickListener, AnimationListener {
 
 
 	/** This is the UI thread for the running game**/
@@ -33,11 +37,15 @@ public class BounceGameActivity extends Activity implements OnClickListener {
 	GameView game;
 	TextView scoreBox;
 	TextView multBox;
+	TextView onScreenScore;
+	Button switchTarget;
 	Button powerUpOne;
 	Button powerUpTwo;
 	Button powerUpThree;
 	Animation shrink;
 	Animation grow;
+	Animation fadeOut;
+	LinearLayout onScreenScoreLayout;
 	public HashMap<Integer, String> powerUps = new HashMap<Integer, String>();
 	private int powerUpsEnabled =0;
 	//protected PowerManager.WakeLock mWakeLock; //not sure if this works
@@ -90,6 +98,12 @@ public class BounceGameActivity extends Activity implements OnClickListener {
 		powerUpThree.setVisibility(View.INVISIBLE);
 		shrink = AnimationUtils.loadAnimation(this, R.anim.shrink);
 		grow = AnimationUtils.loadAnimation(this, R.anim.grow);
+		fadeOut = AnimationUtils.loadAnimation(this, R.anim.fade_out);
+		switchTarget = (Button) findViewById(R.id.switch_target);
+		switchTarget.setOnClickListener(this);
+		onScreenScore = (TextView) findViewById(R.id.onScreenScore);
+		onScreenScoreLayout = (LinearLayout) findViewById(R.id.onScreenScoreLinearLayout);
+		grow.setAnimationListener(this);
 	}
 	public void setTextView(final String txt, final int mult){
 		BounceGameActivity.this.runOnUiThread(new Runnable() {     
@@ -190,6 +204,8 @@ public class BounceGameActivity extends Activity implements OnClickListener {
 			disablePowerUp(powerUpThree);
 			powerUpsEnabled--;
 			break;
+		case R.id.switch_target:
+			game.switchTarget();
 		}
 
 	}
@@ -217,6 +233,36 @@ public class BounceGameActivity extends Activity implements OnClickListener {
 	public void enablePowerUp(View powerUp){
 		powerUp.setVisibility(View.VISIBLE);
 		powerUp.setClickable(true);
+	}
+	public void updateOnScreenScore(final Coordinate c, final String txt){
+		BounceGameActivity.this.runOnUiThread(new Runnable() {   
+			
+			public void run() {      
+				Log.e("updating on screen", "score");
+				LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.FILL_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+				layoutParams.setMargins(c.x, c.y, 0, 0);
+				((ViewGroup)onScreenScore.getParent()).removeView(onScreenScore);
+				onScreenScoreLayout.addView(onScreenScore, layoutParams);
+				onScreenScore.setText(txt);  
+				onScreenScore.setVisibility(View.VISIBLE);
+				onScreenScore.startAnimation(grow);
+				onScreenScore.startAnimation(fadeOut);
+			} 
+		});
+	}
+	@Override
+	public void onAnimationEnd(Animation anim) {
+		onScreenScore.setVisibility(View.INVISIBLE);
+	}
+	@Override
+	public void onAnimationRepeat(Animation anim) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void onAnimationStart(Animation anim) {
+		// TODO Auto-generated method stub
+		
 	}
 
 

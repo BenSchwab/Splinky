@@ -31,7 +31,7 @@ public class GameView extends SurfaceView implements OnTouchListener  {
 	//TODO: fix teleports -- make enemies running to them die -- shrink and spin out?
 	//TODO: fix side bars -- add power ups on both sides
 	//TODO: fix graphics
-	
+
 	private final int FPS = 20;
 	int itemFrameCounter;
 	private int score;
@@ -49,7 +49,10 @@ public class GameView extends SurfaceView implements OnTouchListener  {
 	private Bitmap borderHorizontal;
 	private SurfaceHolder holder;
 	private GameLoopThread gameLoopThread;
-
+	
+	private int curTar;
+	private TargetReticle targetReticle;
+	private int touchBuffer;
 	//Multiple badGuys
 	private ArrayList<EnemySprite> badGuyLocs;
 
@@ -148,6 +151,10 @@ public class GameView extends SurfaceView implements OnTouchListener  {
 		specialEffects = new ArrayList<SpecialEffect>();
 		itemTime =90;
 		isNextGreen = false;
+		targetReticle = new TargetReticle(getResources());
+		targetReticle.setTarget(badGuyOne);
+		curTar = 0;
+		touchBuffer =0;
 
 	}
 
@@ -157,34 +164,50 @@ public class GameView extends SurfaceView implements OnTouchListener  {
 
 	@Override
 	protected void onDraw(Canvas canvas) {  //this is important -- main hub of activity
-		
 		itemClock();
 		enemyClock();
 		drawBackground(canvas);
-		drawSpecialEffects(canvas);
 		drawTeleports(canvas);
 		drawPowerUps(canvas);
 		drawSpeed(canvas);
 		drawGoodGuy(canvas);
-		for(EnemySprite c: badGuyLocs){//move to submethod?
-			drawBadGuy(c, canvas);
+		for(int i =badGuyLocs.size()-1; i>=0; i--){
+			EnemySprite bGuy = badGuyLocs.get(i);
+			drawBadGuy(bGuy, canvas);
 		}
+		drawSpecialEffects(canvas);
+		//Log.e("abou to call", "test");
+		drawTargetReticle(canvas);
+		touchBuffer --;
 
+	}
+
+	private void drawTargetReticle(Canvas c) {
+		if(!badGuyLocs.contains(targetReticle.getTarget())){
+			//Log.e("no target", "no target");
+			targetReticle.setTarget(null);
+			switchTarget();
+		}
+		else{
+			//Log.e("target", "target");
+			targetReticle.draw(c);
+		}
+		
 	}
 
 	private void enemyClock() {
 		enemyFrameCounter++;
-		if(enemyFrameCounter>FPS*5){
+		if(enemyFrameCounter>FPS*15){
 			spawnEnemy();
 			enemyFrameCounter =0;
 		}
-		
+
 	}
 
 	private void spawnEnemy() {
 		badGuyLocs.add(new EnemySprite(getResources()));
 		Log.e("enemyadded", ":(");
-		
+
 	}
 
 	private void itemClock() {
@@ -193,7 +216,7 @@ public class GameView extends SurfaceView implements OnTouchListener  {
 			spawnItem();
 			itemFrameCounter =0;
 		}
-		
+
 	}
 
 	private void drawSpecialEffects(Canvas canvas) {
@@ -221,26 +244,22 @@ public class GameView extends SurfaceView implements OnTouchListener  {
 		ArrayList<Sprite> toRemove = new ArrayList<Sprite>();
 		for(Sprite c: mobilePowerUps){
 			ShrinkRaySprite shrinkRay = (ShrinkRaySprite)c;
-			EnemySprite badGuy = badGuyLocs.get(0); //this is bad..
+			EnemySprite badGuy = shrinkRay.getTarget(); //this is bad..
 			double xDiff =((((shrinkRay.x+shrinkRay.width)/2-(badGuy.x+badGuy.width)/2))); //targetting method?
 			double yDiff =((((shrinkRay.y+shrinkRay.height)/2-(badGuy.y+badGuy.height)/2)));//targeting method
 			double magnitude = Math.pow(xDiff*xDiff+yDiff*yDiff, .5);
 			double xUnitVector = -xDiff/magnitude*15;
 			double yUnitVector = -yDiff/magnitude*15;
-
 			shrinkRay.x = (int) (shrinkRay.x+xUnitVector); //maybe make an intersect method that tells you if two sprites intersect?
 			shrinkRay.y = (int) (shrinkRay.y+yUnitVector);
-			for(EnemySprite bGuy: badGuyLocs){
-				if (bGuy.intersects(shrinkRay))
-				{
-					playSound(SHRINK_SOUND);
-					toRemove.add(c);
-					bGuy.shrinkCounter =60; 
-
-				} 
+			if(badGuy.intersects(shrinkRay)){
+				playSound(SHRINK_SOUND);
+				toRemove.add(c);
+				if(badGuy.reduceState()){
+					badGuyLocs.remove(badGuy);
+				}
 			}
 			shrinkRay.draw(canvas);
-
 		}
 		for(Sprite c: toRemove){
 			mobilePowerUps.remove(c);
@@ -270,7 +289,7 @@ public class GameView extends SurfaceView implements OnTouchListener  {
 			powerUpLocs.add(newFreeze);
 			break;
 		case 3:
-			ShrinkRaySprite newShrink = new ShrinkRaySprite(getResources(),itemSpot);
+			ShrinkRaySprite newShrink = new ShrinkRaySprite(getResources(),itemSpot,null);
 			powerUpLocs.add(newShrink);
 		case 4:
 			TeleportSprite newTeleport = new TeleportSprite(getResources(),itemSpot);
@@ -280,15 +299,13 @@ public class GameView extends SurfaceView implements OnTouchListener  {
 
 
 	}
-	protected void drawBadGuy(EnemySprite badGuy, Canvas canvas){
+	private void drawBadGuy(EnemySprite badGuy, Canvas canvas){
 		if(badGuy.freezeCounter>0){
 			badGuy.freezeCounter--;
 			badGuy.draw(canvas);
 			return;
 		}
-
 		if(badGuy.xSpeeds.isEmpty()){
-
 			for(int i =0; i<5; i++){
 				double xDiff =((((player.x+player.width)/2-(badGuy.x+badGuy.width)/2)));
 				double yDiff =((((player.y+player.height)/2-(badGuy.y+badGuy.height)/2)));
@@ -300,7 +317,6 @@ public class GameView extends SurfaceView implements OnTouchListener  {
 
 			}
 		}
-		//Log.e("BSX", ""+badSpeedsX.size());
 		badGuy.x = badGuy.xSpeeds.remove() + badGuy.x;
 		badGuy.y = badGuy.ySpeeds.remove() + badGuy.y;
 		if (badGuy.y >= yBottom - badGuy.height) {
@@ -309,41 +325,57 @@ public class GameView extends SurfaceView implements OnTouchListener  {
 		if (badGuy.y <= yTop) {
 			badGuy.y = yTop;
 		}
-
 		if (badGuy.x >= xRight - badGuy.width) {
 			badGuy.x= xRight-badGuy.width;
 		}
 		if (badGuy.x <= xLeft) {
 			badGuy.x=xLeft;
 		}
-		badGuy.draw(canvas);
-		if (player.intersects(badGuy))
-		{
-			pauseGame();
-			mHandler.post(new Runnable(){
-				@Override
-				public void run() {
-					AlertDialog.Builder builder = new AlertDialog.Builder((BounceGameActivity)getContext());
-					builder.setMessage("Game Over. Would you like to play again?")
-					.setCancelable(false)
-					.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-						public void onClick(DialogInterface dialog, int id) {
-							restartGame();
-						}
-					})
-					.setNegativeButton("No", new DialogInterface.OnClickListener() {
-						public void onClick(DialogInterface dialog, int id) {
-							endGame();
-						}
-					});
-					AlertDialog alert = builder.create();
-					alert.show();
-				}
+		if(badGuyIntersectsTeleport(badGuy)){
+			badGuyLocs.remove((badGuy)); //concurrent mod problem?
+		}
+		else{
+			badGuy.draw(canvas);
+			if (player.intersects(badGuy))
+			{
+				pauseGame();
+				gameOver();
+			} 
+		}
+	}
 
-			});
+	private boolean badGuyIntersectsTeleport(EnemySprite badGuy) {
+		for(ActiveTeleport aT: teleportLocs){
+			if(aT.intersectCenter(badGuy)){
+				specialEffects.add(new BadGuySpecialEffect(getResources(),badGuy));
+				return true;
+			}
+		}
+		return false;
+	}
 
+	private void gameOver() {
+		mHandler.post(new Runnable(){
+			@Override
+			public void run() {
+				AlertDialog.Builder builder = new AlertDialog.Builder((BounceGameActivity)getContext());
+				builder.setMessage("Game Over. Would you like to play again?")
+				.setCancelable(false)
+				.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int id) {
+						restartGame();
+					}
+				})
+				.setNegativeButton("No", new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int id) {
+						endGame();
+					}
+				});
+				AlertDialog alert = builder.create();
+				alert.show();
+			}
+		});
 
-		} 
 	}
 
 	private void drawGoodGuy(Canvas canvas) {
@@ -356,16 +388,16 @@ public class GameView extends SurfaceView implements OnTouchListener  {
 			player.y =  yBottom - player.height;
 			doBounce(3);
 		}
-		if (player.y+20 <= yTop) { //badCODE
-			player.y = yTop-20;
+		if (player.y<= yTop) { //badCODE
+			player.y = yTop;
 			doBounce(1);
 		}
 		if (player.x >= xRight - player.width) { //badCODE
 			player.x= xRight-player.width;
 			doBounce(4);
 		}
-		if (player.x+20<= xLeft) {
-			player.x=xLeft-20;
+		if (player.x<= xLeft) {
+			player.x=xLeft;
 			doBounce(2);
 		}
 		player.bounceSpeedX =(int) (player.bounceSpeedX/1.3);
@@ -383,6 +415,8 @@ public class GameView extends SurfaceView implements OnTouchListener  {
 				slowMult =0;
 				String scoreString = ""+score;
 				((BounceGameActivity) getContext()).setTextView(scoreString, Math.max(speedMult, slowMult));
+				Log.e("trying to", "update score");
+				((BounceGameActivity) getContext()).updateOnScreenScore(new Coordinate(player.getX(), player.getY()), "+10");
 			}
 
 		}
@@ -402,6 +436,7 @@ public class GameView extends SurfaceView implements OnTouchListener  {
 				slowMult ++;
 				String scoreString = ""+score;
 				((BounceGameActivity) getContext()).setTextView(scoreString, Math.max(speedMult, slowMult));
+				((BounceGameActivity) getContext()).updateOnScreenScore(new Coordinate(player.getX(), player.getY()), "+10");
 			}
 		}
 		for(Sprite remove: toRemove){
@@ -455,7 +490,7 @@ public class GameView extends SurfaceView implements OnTouchListener  {
 		if(teleportTimeOut<1){
 			for(ActiveTeleport a: teleportLocs){
 				if(a.intersectCenter(player)){
-					if(a.isLinked){
+					if(a.isLinked()&&teleportTimeOut<1){
 						ActiveTeleport linkedTeleport = a.getLinkedTeleport();
 						Log.e("Lt", ""+linkedTeleport.toString());
 						player.x = linkedTeleport.getX();
@@ -468,8 +503,6 @@ public class GameView extends SurfaceView implements OnTouchListener  {
 		else{
 			teleportTimeOut--;
 		}
-
-
 	}
 
 	private void drawSpeed(Canvas canvas) {
@@ -516,9 +549,6 @@ public class GameView extends SurfaceView implements OnTouchListener  {
 			powerUpLocs.remove(s);
 		}
 		toRemove.clear();
-
-
-
 	}
 	//1 = top, 2= right, 3 = bottom, 4 = left
 	private void doBounce(int wall){
@@ -540,8 +570,6 @@ public class GameView extends SurfaceView implements OnTouchListener  {
 		//player.bounceSpeedX = -player.xSpeed*player.speedMultiplier*3;
 		//player.bounceSpeedY = -player.ySpeed*player.speedMultiplier*3;
 	}
-
-
 	private void initSounds() {
 		soundPool = new SoundPool(4, AudioManager.STREAM_MUSIC, 100);
 		soundPoolMap = new HashMap<Integer, Integer>();
@@ -552,7 +580,6 @@ public class GameView extends SurfaceView implements OnTouchListener  {
 		soundPoolMap.put(SHRINK_SOUND, soundPool.load(getContext(), R.raw.shrink,1));
 		soundPoolMap.put(BACKGROUND_ONE, soundPool.load(getContext(), R.raw.backgroundmusicone,1));
 	}
-
 	public void playSound(int sound) {
 		/* Updated: The next 4 lines calculate the current volume in a scale of 0.0 to 1.0 */
 		AudioManager mgr = (AudioManager)getContext().getSystemService(Context.AUDIO_SERVICE);
@@ -562,7 +589,6 @@ public class GameView extends SurfaceView implements OnTouchListener  {
 		/* Play the sound with the correct volume */
 		soundPool.play(soundPoolMap.get(sound), volume, volume, 1, 0, 1f);     
 	}
-
 	public void speedUpSound() {
 		//playSound(BACKGROUND_ONE);
 		playSound(SPEED_UP_SOUND);
@@ -577,24 +603,14 @@ public class GameView extends SurfaceView implements OnTouchListener  {
 	public void playFreezePowerSound(){
 		playSound(FREEZE_POWER_SOUND);
 	}
-
-
-	public class Coordinate{
-		public int x;
-		public int y;
-		public Coordinate(int x, int y){
-			this.x =x;
-			this.y =y;
-		}
-	}
-
-
 	public void usePowerUp(String powerUp){
 		if(powerUp.equals("shrinkpower")){
-			mobilePowerUps.add(new ShrinkRaySprite(getResources(),new Coordinate(player.x,player.y)));
+			if(targetReticle.getTarget()!=null){
+			mobilePowerUps.add(new ShrinkRaySprite(getResources(),new Coordinate(player.x,player.y), targetReticle.getTarget()));
+			}
 		}
 		else{
-			IceSpecialEffect ice = new IceSpecialEffect(getResources(),new Coordinate(player.x, player.y));
+			IceSpecialEffect ice = new IceSpecialEffect(getResources(),player);
 			specialEffects.add(ice);
 			playFreezePowerSound();
 			for(EnemySprite badGuy: badGuyLocs){
@@ -603,45 +619,44 @@ public class GameView extends SurfaceView implements OnTouchListener  {
 				}
 			}
 		}
-
 	}
-
 	@Override
 	public boolean onTouch(View v, MotionEvent event) {
+		if(touchBuffer>0){
+			return false;
+		}
 		int x = (int) event.getX();
 		int y = (int) event.getY();
+		touchBuffer = 20;
 		Log.e("touchEvent", ""+x);
 		Log.e("touchEvent", ""+y);
 		if(teleportCount>0){ //do I have any deployable teleports?
 			if(teleportLocs.size()==0){
-				ActiveTeleport newTele = new ActiveTeleport(getResources(), new Coordinate(x,y));
+				ActiveTeleport newTele = new ActiveTeleport(getResources(), new Coordinate(x,y), isNextGreen);
+				isNextGreen = !isNextGreen;
 				teleportLocs.add(newTele);
-				newTele.isGreen=true;
-				isNextGreen = false;
+
 			}
 			else if(teleportLocs.size()==1){//link existing teleport
-				ActiveTeleport newTele = new ActiveTeleport(getResources(), new Coordinate(x,y));
+				ActiveTeleport newTele = new ActiveTeleport(getResources(), new Coordinate(x,y), isNextGreen);
 				teleportLocs.add(newTele);
-				newTele.isGreen = isNextGreen;
 				isNextGreen = !isNextGreen;
 				ActiveTeleport oldTele = teleportLocs.get(0);
 				oldTele.setLinkedTeleport(newTele);
 				newTele.setLinkedTeleport(oldTele);
-
 			}
 			else if(teleportLocs.size()==2){//link new teleport with proper color
 				ActiveTeleport aT = teleportLocs.get(0);
-				if(aT.isGreen&&isNextGreen||!aT.isGreen&&!isNextGreen){
-					teleportLocs.remove(0);//concurrent mod
+				if(aT.isGreen()&&isNextGreen||!aT.isGreen()&&!isNextGreen){
+					aT = teleportLocs.remove(0);//concurrent mod
 				}
 				else{
-					teleportLocs.remove(1);
+					aT = teleportLocs.remove(1);
 				}
 				ActiveTeleport oldTele = teleportLocs.get(0);
-				ActiveTeleport newTele = new ActiveTeleport(getResources(), new Coordinate(x,y));
+				ActiveTeleport newTele = new ActiveTeleport(getResources(), new Coordinate(x,y), aT.isGreen());
 				teleportLocs.add(newTele);
-				newTele.isGreen = isNextGreen;
-				isNextGreen = !isNextGreen;
+				isNextGreen = !aT.isGreen();
 				oldTele.setLinkedTeleport(newTele);
 				newTele.setLinkedTeleport(oldTele);
 
@@ -668,6 +683,18 @@ public class GameView extends SurfaceView implements OnTouchListener  {
 		gameLoopThread.start();
 		Log.e("game", "restarted");
 		gameLoopThread.setRunning(true);
+	}
+
+	public void switchTarget() {
+		int size = badGuyLocs.size();
+		curTar++;
+		if(curTar>= size){
+			curTar =0;
+		}
+		if(badGuyLocs.size()>0){
+			targetReticle.setTarget(badGuyLocs.get(curTar));
+		}
+		
 	}
 }
 

@@ -1,6 +1,6 @@
 package com.apphelionstudios.splinky;
 
-import com.apphelionstudios.splinky.GameView.Coordinate;
+
 
 import android.content.res.Resources;
 import android.graphics.Bitmap;

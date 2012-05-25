@@ -18,19 +18,23 @@ public class EnemySprite extends Sprite {
 	public Bitmap badGuy;
 	public Bitmap badGuyFrozen;
 	public Bitmap badGuyShrunk;
+	private Bitmap badGuyBig;
 	public Queue<Integer> xSpeeds = new LinkedList<Integer>();
 	public Queue<Integer> ySpeeds = new LinkedList<Integer>();
 	public int freezeCounter =0;
 	public int shrinkCounter =0;
 	public int turns;
+	private int state;
 	
 	public EnemySprite(Resources resource){
 		badGuy = BitmapFactory.decodeResource(resource,R.drawable.badguytwo);
 		badGuyShrunk = BitmapFactory.decodeResource(resource,R.drawable.badguytwoshrunk);
 		badGuyFrozen= BitmapFactory.decodeResource(resource, R.drawable.badguytwofrozen);
-		width = badGuy.getWidth()-10;
-		height = badGuy.getHeight()-10;
+		badGuyBig= BitmapFactory.decodeResource(resource, R.drawable.badguytwobig);
+		width = badGuy.getWidth();
+		height = badGuy.getHeight();
 		turns =0;
+		state = 2;
 	}
 	@Override
 	public void draw(Canvas c) {
@@ -38,12 +42,14 @@ public class EnemySprite extends Sprite {
 			c.drawBitmap(badGuyFrozen, x, y, null);
 			freezeCounter--;
 		}
-		else if(shrinkCounter>0){
-			c.drawBitmap(badGuyShrunk, x, y, null);
-			shrinkCounter--;
+		else if(state==3){
+			c.drawBitmap(badGuyBig, x, y, null);
+		}
+		else if(state==2){
+			c.drawBitmap(badGuy, x, y, null);
 		}
 		else{
-			c.drawBitmap(badGuy, x, y, null);
+			c.drawBitmap(badGuyShrunk, x, y, null);
 		}
 	}
 	@Override
@@ -69,6 +75,43 @@ public class EnemySprite extends Sprite {
 	}
 	public boolean isFrozen(){
 		return freezeCounter>0;
+	}
+	public boolean reduceState(){
+		state--;
+		if(state==0){
+			return true;
+		}
+		reassignValues();
+		return false;
+	}
+	public void reassignValues(){
+		switch(state){
+		case 3:
+			width = badGuyBig.getWidth();
+			height = badGuyBig.getHeight();
+			break;
+		case 2:
+			width = badGuy.getWidth();
+			height = badGuy.getHeight();
+			break;
+		case 1:
+			width = badGuyShrunk.getWidth();
+			height = badGuyShrunk.getHeight();
+			break;
+		}
+	}
+	public Bitmap getCurBitmap() {
+		switch(state){
+		case 3:
+			return badGuyBig;
+			
+		case 2:
+			return badGuy;
+			
+		case 1:
+			return badGuyShrunk;
+		}
+		return null;
 	}
 
 }

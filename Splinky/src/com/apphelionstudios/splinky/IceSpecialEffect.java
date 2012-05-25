@@ -22,25 +22,24 @@ public class IceSpecialEffect extends SpecialEffect {
 	private int alphaChange;
 	private Rect effectRegion;
 
-	public IceSpecialEffect (Resources resource, com.apphelionstudios.splinky.GameView.Coordinate c){
+	public IceSpecialEffect (Resources resource, PlayerSprite player){
 		Bitmap fg = BitmapFactory.decodeResource(resource, R.drawable.iceeffect2);
 		freezeGraphic = new BitmapDrawable(fg);
-		x=c.x;
-		y=c.y;
-		effectRegion = new Rect(x-fg.getWidth()/2, y-fg.getHeight()/2, x+fg.getWidth()/2, y+fg.getHeight()/2);
-		freezeGraphic.setBounds(x-fg.getWidth()/2, y-fg.getHeight()/2, x+fg.getWidth()/2, y+fg.getHeight()/2);
+		x=player.getX();
+		y=player.getY();
+		Rect area = new Rect((x+player.getWidth()/2)-(fg.getWidth()/2), (y+player.getHeight()/2)-(fg.getHeight()/2), (x+player.getWidth()/2)+(fg.getWidth()/2), (y+player.getHeight()/2)+(fg.getHeight()/2));
+		effectRegion = area;
+		freezeGraphic.setBounds(area);
 		alpha = 0;
 		alphaChange = 50;
 	}
 
 
 	public boolean draw(Canvas c) {
-		
 		freezeGraphic.setAlpha(alpha);
 		//Log.e("drawing", "freeze effect");
 		freezeGraphic.draw(c);
 		return calcAlpha();
-
 	}
 	private boolean calcAlpha() {
 		alpha+=alphaChange;
@@ -49,11 +48,9 @@ public class IceSpecialEffect extends SpecialEffect {
 			alpha = 255;
 		}
 		return alpha>0;
-
 	}
 
 	public int getX() {
-
 		return x;
 	}
 

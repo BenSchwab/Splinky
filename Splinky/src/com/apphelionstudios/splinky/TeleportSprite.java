@@ -1,6 +1,6 @@
 package com.apphelionstudios.splinky;
 
-import com.apphelionstudios.splinky.GameView.Coordinate;
+
 
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -8,14 +8,13 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 
 public class TeleportSprite extends Sprite {
+	
 	private Bitmap teleport;
-	public int x;
-	public int y;
-	public int width;
-	public int height;
-	public int turns;
-	
-	
+	private int x;
+	private int y;
+	private int width;
+	private int height;
+	private int turns;
 	
 	public TeleportSprite(Resources resource, Coordinate c){
 		teleport = BitmapFactory.decodeResource(resource, R.drawable.teleportdrop);

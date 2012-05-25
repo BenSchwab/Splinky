@@ -48,6 +48,8 @@ public class PlayerSprite extends Sprite {
 
 	public void draw(Canvas canvas) {
 		
+		canvas.drawBitmap(goodGuy, x, y, null);
+		/*
 		if(xSpeed>0&&ySpeed==0 ){ //right
 			canvas.drawBitmap(goodGuy4, x-10 , y-10, null);
 		}
@@ -76,6 +78,7 @@ public class PlayerSprite extends Sprite {
 		else{//stationary
 			canvas.drawBitmap(goodGuy, x, y, null);
 		}
+		*/
 	}
 	
 	public void updateSpeed(float x, float y){

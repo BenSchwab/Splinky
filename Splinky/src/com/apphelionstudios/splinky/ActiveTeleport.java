@@ -1,6 +1,6 @@
 package com.apphelionstudios.splinky;
 
-import com.apphelionstudios.splinky.GameView.Coordinate;
+
 
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -13,36 +13,36 @@ public class ActiveTeleport extends Sprite {
 
 	private Bitmap greenTeleport;
 	private Bitmap blueTeleport;
-	public int x;
-	public int y;
-	public int width;
-	public int height;
-	public int turns;
-	public ActiveTeleport linkedTeleport;
-	public boolean isLinked;
-	public boolean isGreen;
-	public int centerX;
-	public int centerY;
+	private int x;
+	private int y;
+	private int width;
+	private int height;
+	private int turns;
+	private ActiveTeleport linkedTeleport;
+	private boolean isLinked;
+	private boolean isGreen;
+	private int centerX;
+	private int centerY;
 	
-	public ActiveTeleport(Resources resource, Coordinate c){
+	public ActiveTeleport(Resources resource, Coordinate c, boolean isG){
 		greenTeleport = BitmapFactory.decodeResource(resource, R.drawable.greenactiveteleport);
 		blueTeleport = BitmapFactory.decodeResource(resource, R.drawable.blueactiveteleport);
 		x=c.x;
 		y=c.y;
 		width = blueTeleport.getWidth();
 		height = blueTeleport.getHeight();
-		centerX = (2*getX()+getWidth())/2;
-		centerY = (2*getY()+getHeight())/2;
+		centerX = (2*getX()+getWidth())/2;//adjust algorithm
+		centerY = (2*getY()+getHeight())/2;//adjust algorithm
 		turns =0;
 		isLinked=false;
-		isGreen = true;
+		isGreen = isG;
 		
 	}
 	
 	@Override
 	public void draw(Canvas c) {
 		if(isGreen){
-		c.drawBitmap(greenTeleport, x, y, null);
+			c.drawBitmap(greenTeleport, x, y, null);
 		}
 		else{
 			c.drawBitmap(blueTeleport, x, y, null);
@@ -81,9 +81,21 @@ public class ActiveTeleport extends Sprite {
 	public ActiveTeleport getLinkedTeleport(){
 		return linkedTeleport;
 	}
-	public boolean intersectCenter(Sprite c){
+	public boolean intersectCenter(Sprite c){ //TODO might need adjustment
 		Rect r = new Rect(centerX, centerY, centerX, centerY);
 		Rect r2 = new Rect(c.getX(), c.getY(), c.getX()+c.getWidth(), c.getY()+c.getHeight());
 		return r.intersect(r2);
 	}
+	public boolean isGreen(){
+		return isGreen;
+	}
+	public String toString(){
+		if(isGreen){
+			return "Green";
+		}
+		else{
+			return "Blue";
+		}
+	}
+	
 }

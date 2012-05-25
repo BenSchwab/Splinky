@@ -14,7 +14,7 @@ public class FreezePower extends Sprite {
 	public int height;
 	public int turns;
 
-	public FreezePower (Resources resource, com.apphelionstudios.splinky.GameView.Coordinate c){
+	public FreezePower (Resources resource, Coordinate c){
 		freezePower = BitmapFactory.decodeResource(resource, R.drawable.snowflake);
 		x=c.x;
 		y=c.y;
