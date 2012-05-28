@@ -1,12 +1,17 @@
 package com.apphelionstudios.splinky;
 
 
+import java.util.ArrayList;
 import java.util.HashMap;
+
+import com.apphelionstudios.results.GameStat;
+import com.apphelionstudios.results.Results;
 
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -42,6 +47,8 @@ public class BounceGameActivity extends Activity implements OnClickListener, Ani
 	Button powerUpOne;
 	Button powerUpTwo;
 	Button powerUpThree;
+	Button enableShield;
+	Button nuke;
 	Animation shrink;
 	Animation grow;
 	Animation fadeOut;
@@ -104,6 +111,13 @@ public class BounceGameActivity extends Activity implements OnClickListener, Ani
 		onScreenScore = (TextView) findViewById(R.id.onScreenScore);
 		onScreenScoreLayout = (LinearLayout) findViewById(R.id.onScreenScoreLinearLayout);
 		grow.setAnimationListener(this);
+		enableShield= (Button) findViewById(R.id.enable_shield);
+		enableShield.setOnClickListener(this);
+		enableShield.setClickable(true);
+		nuke= (Button) findViewById(R.id.nuke_button);
+		nuke.setOnClickListener(this);
+		nuke.setClickable(true);
+		
 	}
 	public void setTextView(final String txt, final int mult){
 		BounceGameActivity.this.runOnUiThread(new Runnable() {     
@@ -204,8 +218,15 @@ public class BounceGameActivity extends Activity implements OnClickListener, Ani
 			disablePowerUp(powerUpThree);
 			powerUpsEnabled--;
 			break;
+		case R.id.enable_shield:
+			game.enableShield();
+			break;
 		case R.id.switch_target:
 			game.switchTarget();
+			break;
+		case R.id.nuke_button:
+			game.useNuke();
+			break;
 		}
 
 	}
@@ -263,6 +284,12 @@ public class BounceGameActivity extends Activity implements OnClickListener, Ani
 	public void onAnimationStart(Animation anim) {
 		// TODO Auto-generated method stub
 		
+	}
+	public void generateStats(ArrayList<String> stats){
+		Intent i = new Intent(this, Results.class);
+		 i.putStringArrayListExtra("stats", stats);
+		 this.finish();
+		startActivity(i);
 	}
 
 

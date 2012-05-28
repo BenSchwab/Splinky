@@ -16,19 +16,23 @@ public class PlayerSprite extends Sprite {
 	private Bitmap goodGuy23;
 	private Bitmap goodGuy34;
 	private Bitmap goodGuy41;
+	private Bitmap topFlame;
 	
 	//player variables
 	public int x =300;
 	public int y=300;
 	public int ySpeed = 0;
 	public int xSpeed = 0;
-	public int speedMultiplier =2;
+	public double speedMultiplier =2;
 	public int width;
 	public int height;
 	public int speedY =0;
 	public int bounceSpeedX =0;
 	public int bounceSpeedY = 0;
 	public int turns;
+	public int shieldImmunityBuffer;
+	
+	private boolean hasShield;
 	
 	public PlayerSprite(Resources resources) {
 		
@@ -41,14 +45,18 @@ public class PlayerSprite extends Sprite {
 				goodGuy23= BitmapFactory.decodeResource(resources, R.drawable.goodguy23);
 				goodGuy34= BitmapFactory.decodeResource(resources, R.drawable.goodguy34);
 				goodGuy41= BitmapFactory.decodeResource(resources, R.drawable.goodguy14);
+				topFlame = BitmapFactory.decodeResource(resources, R.drawable.flame); 
 				width = goodGuy.getWidth();
 				height = goodGuy.getHeight();
 				turns =0;
+				shieldImmunityBuffer =0;
+				hasShield = false;
 	}
 
 	public void draw(Canvas canvas) {
-		
+		//canvas.drawBitmap(topFlame, x, y-topFlame.getHeight()/2, null);
 		canvas.drawBitmap(goodGuy, x, y, null);
+		
 		/*
 		if(xSpeed>0&&ySpeed==0 ){ //right
 			canvas.drawBitmap(goodGuy4, x-10 , y-10, null);
@@ -107,8 +115,28 @@ public class PlayerSprite extends Sprite {
 	}
 	@Override
 	public int getTurns() {
-		// TODO Auto-generated method stub
 		return turns;
+	}
+	public void setX(int x){
+		this.x = x;
+	}
+	public void setY(int y){
+		this.y = y;
+	}
+	public boolean hasShield(){
+		return hasShield;
+	}
+	public void enableShield(boolean on){
+		hasShield = on;
+	}
+
+	public void setShieldImmunityBuffer(int i) {
+		shieldImmunityBuffer = i;
+		
+	}
+	public boolean hasShieldBuffer(){
+		shieldImmunityBuffer--;
+		return shieldImmunityBuffer>0;
 	}
 
 }

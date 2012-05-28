@@ -4,9 +4,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import com.apphelionstudios.results.GameStat;
+import com.apphelionstudios.results.Results;
+
+
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -27,17 +33,24 @@ import android.view.View.OnTouchListener;
 
 public class GameView extends SurfaceView implements OnTouchListener  {
 
-	//TODO: Change things up to support multiple enemies -- add random tracking for shrink ray
-	//TODO: fix teleports -- make enemies running to them die -- shrink and spin out?
+
+	//TODO: Create database
 	//TODO: fix side bars -- add power ups on both sides
 	//TODO: fix graphics
+	//TODO: make player leave teleport before it reactivates
+	//TODO: get screen ratio and layout and create an adjustment factor for the drawables
+	//TODO: add enemy AI
+	//TODO: create loading splash screen
+	//TODO: create armory
+	//TODO: create new maps?
+	//TODO: fix sound effects
+	//TODO: create star
 
-	private final int FPS = 20;
+	private final int FPS = 30;
 	int itemFrameCounter;
 	private int score;
 	Handler mHandler;
 	private int enemyFrameCounter;
-
 
 	//bitmaps
 	PlayerSprite player;
@@ -49,7 +62,7 @@ public class GameView extends SurfaceView implements OnTouchListener  {
 	private Bitmap borderHorizontal;
 	private SurfaceHolder holder;
 	private GameLoopThread gameLoopThread;
-	
+
 	private int curTar;
 	private TargetReticle targetReticle;
 	private int touchBuffer;
@@ -70,6 +83,7 @@ public class GameView extends SurfaceView implements OnTouchListener  {
 	private int teleportCount;
 	private int itemTime;
 	private boolean isNextGreen;
+	private PlayerShield playerShield;
 
 	//board limits
 	private int yTop;
@@ -77,15 +91,14 @@ public class GameView extends SurfaceView implements OnTouchListener  {
 	private int xLeft;
 	private int xRight;
 
-	//sound effects
-	private SoundPool soundPool;
-	private HashMap<Integer, Integer> soundPoolMap;
-	public static final int SPEED_UP_SOUND = 1;
-	public static final int SLOW_DOWN_SOUND = 2;
-	public static final int BOUNCE_SOUND =3;
-	private static final int FREEZE_POWER_SOUND = 4;
-	private static final int SHRINK_SOUND = 5;
-	private static final int BACKGROUND_ONE = 1000;
+	//stats
+	private int speedBoostCollected;
+	private int speedDropsCollected;
+	private int enemiesKilled;
+	private int teleportsUsed;
+
+	private GameResources gameResources;
+	
 
 	int teleportTimeOut = 0;
 
@@ -155,6 +168,8 @@ public class GameView extends SurfaceView implements OnTouchListener  {
 		targetReticle.setTarget(badGuyOne);
 		curTar = 0;
 		touchBuffer =0;
+		playerShield = new PlayerShield(getResources(),player);
+		gameResources = GameResources.getInstance();
 
 	}
 
@@ -164,6 +179,7 @@ public class GameView extends SurfaceView implements OnTouchListener  {
 
 	@Override
 	protected void onDraw(Canvas canvas) {  //this is important -- main hub of activity
+
 		itemClock();
 		enemyClock();
 		drawBackground(canvas);
@@ -171,14 +187,25 @@ public class GameView extends SurfaceView implements OnTouchListener  {
 		drawPowerUps(canvas);
 		drawSpeed(canvas);
 		drawGoodGuy(canvas);
+		drawPlayerShield(canvas);
 		for(int i =badGuyLocs.size()-1; i>=0; i--){
 			EnemySprite bGuy = badGuyLocs.get(i);
 			drawBadGuy(bGuy, canvas);
 		}
 		drawSpecialEffects(canvas);
-		//Log.e("abou to call", "test");
+		//Log.e("about to call", "test");
 		drawTargetReticle(canvas);
 		touchBuffer --;
+
+
+	}
+
+
+
+	private void drawPlayerShield(Canvas canvas) {
+		if(player.hasShield()){
+			playerShield.draw(canvas);
+		}
 
 	}
 
@@ -192,12 +219,12 @@ public class GameView extends SurfaceView implements OnTouchListener  {
 			//Log.e("target", "target");
 			targetReticle.draw(c);
 		}
-		
+
 	}
 
 	private void enemyClock() {
 		enemyFrameCounter++;
-		if(enemyFrameCounter>FPS*15){
+		if(enemyFrameCounter>FPS*8){
 			spawnEnemy();
 			enemyFrameCounter =0;
 		}
@@ -300,8 +327,13 @@ public class GameView extends SurfaceView implements OnTouchListener  {
 
 	}
 	private void drawBadGuy(EnemySprite badGuy, Canvas canvas){
-		if(badGuy.freezeCounter>0){
-			badGuy.freezeCounter--;
+		if(badGuy.isFrozen()){
+			if (badGuy.intersects(player))
+			{
+				badGuyLocs.remove((badGuy));
+				specialEffects.add(new BadGuySpecialEffect(getResources(),badGuy));
+			}
+			badGuy.freezeCounter--;//bad guy should take care of this himself
 			badGuy.draw(canvas);
 			return;
 		}
@@ -336,10 +368,19 @@ public class GameView extends SurfaceView implements OnTouchListener  {
 		}
 		else{
 			badGuy.draw(canvas);
-			if (player.intersects(badGuy))
+			if (badGuy.intersects(player))
 			{
-				pauseGame();
-				gameOver();
+				if(player.hasShield()){
+					player.enableShield(false); 
+					player.setShieldImmunityBuffer(20); //creating poping animation
+				}
+				else if(player.hasShieldBuffer()){
+					//code sometime?
+				}
+				else{
+					pauseGame();
+					gameOver();
+				}
 			} 
 		}
 	}
@@ -368,7 +409,8 @@ public class GameView extends SurfaceView implements OnTouchListener  {
 				})
 				.setNegativeButton("No", new DialogInterface.OnClickListener() {
 					public void onClick(DialogInterface dialog, int id) {
-						endGame();
+						//endGame();
+						goToStats();
 					}
 				});
 				AlertDialog alert = builder.create();
@@ -378,14 +420,14 @@ public class GameView extends SurfaceView implements OnTouchListener  {
 
 	}
 
-	private void drawGoodGuy(Canvas canvas) {
-		player.x = player.x+ player.xSpeed*player.speedMultiplier;
-		player.y = player.y + player.ySpeed*player.speedMultiplier;
+	private void drawGoodGuy(Canvas canvas) { //TODO fix bad code
+		player.x = (int) (player.x+ player.xSpeed*player.speedMultiplier);
+		player.y = (int) (player.y + player.ySpeed*player.speedMultiplier);
 		player.x = player.x+ player.bounceSpeedX;
 		player.y = player.y + player.bounceSpeedY;
 
-		if (player.y >= yBottom - player.height) {
-			player.y =  yBottom - player.height;
+		if (player.getY() >= yBottom - player.getHeight()) {
+			player.setY(yBottom - player.height);
 			doBounce(3);
 		}
 		if (player.y<= yTop) { //badCODE
@@ -415,7 +457,7 @@ public class GameView extends SurfaceView implements OnTouchListener  {
 				slowMult =0;
 				String scoreString = ""+score;
 				((BounceGameActivity) getContext()).setTextView(scoreString, Math.max(speedMult, slowMult));
-				Log.e("trying to", "update score");
+				updateOnScreenScore(player.getCoordinate(), "10");
 				((BounceGameActivity) getContext()).updateOnScreenScore(new Coordinate(player.getX(), player.getY()), "+10");
 			}
 
@@ -428,7 +470,7 @@ public class GameView extends SurfaceView implements OnTouchListener  {
 		for(SlowDownSprite sBLoc: speedDropLocs){
 			if(sBLoc.intersects(player)){
 				toRemove.add(sBLoc);
-				player.speedMultiplier--;
+				player.speedMultiplier -=.3;
 				itemsVisable--;
 				slowDownSound();
 				score++;
@@ -437,6 +479,7 @@ public class GameView extends SurfaceView implements OnTouchListener  {
 				String scoreString = ""+score;
 				((BounceGameActivity) getContext()).setTextView(scoreString, Math.max(speedMult, slowMult));
 				((BounceGameActivity) getContext()).updateOnScreenScore(new Coordinate(player.getX(), player.getY()), "+10");
+
 			}
 		}
 		for(Sprite remove: toRemove){
@@ -447,7 +490,6 @@ public class GameView extends SurfaceView implements OnTouchListener  {
 		for(Sprite p: powerUpLocs){
 			if(p instanceof FreezePower){
 				FreezePower powerUp = (FreezePower)p;
-				//if(powerUp.x>=player.x&&powerUp.x<=player.x+player.width&&powerUp.y>=player.y&&powerUp.y<=player.y+player.height){
 				if(powerUp.intersects(player)){
 					toRemove.add(powerUp);
 					score++;
@@ -458,7 +500,6 @@ public class GameView extends SurfaceView implements OnTouchListener  {
 			}
 			if(p instanceof ShrinkRaySprite){
 				ShrinkRaySprite powerUp = (ShrinkRaySprite)p;
-				//if(powerUp.x>=player.x&&powerUp.x<=player.x+player.width&&powerUp.y>=player.y&&powerUp.y<=player.y+player.height){
 				if(powerUp.intersects(player)){
 					toRemove.add(powerUp);
 					score++;
@@ -469,7 +510,6 @@ public class GameView extends SurfaceView implements OnTouchListener  {
 			}
 			if(p instanceof TeleportSprite){
 				TeleportSprite powerUp = (TeleportSprite)p;
-				//if(powerUp.x>=player.x&&powerUp.x<=player.x+player.width&&powerUp.y>=player.y&&powerUp.y<=player.y+player.height){
 				if(powerUp.intersects(player)){
 					toRemove.add(powerUp);
 					score++;
@@ -555,30 +595,22 @@ public class GameView extends SurfaceView implements OnTouchListener  {
 		playBounceSound();
 		switch(wall){
 		case 1:
-			player.bounceSpeedY = -player.ySpeed*player.speedMultiplier*3;
+			player.bounceSpeedY = (int) (-player.ySpeed*player.speedMultiplier*3);
 			break;
 		case 2:
-			player.bounceSpeedX = -player.xSpeed*player.speedMultiplier*3;
+			player.bounceSpeedX = (int) (-player.xSpeed*player.speedMultiplier*3);
 			break;
 		case 3:
-			player.bounceSpeedY = -player.ySpeed*player.speedMultiplier*3;
+			player.bounceSpeedY = (int) (-player.ySpeed*player.speedMultiplier*3);
 			break;
 		case 4:
-			player.bounceSpeedX = -player.xSpeed*player.speedMultiplier*3;
+			player.bounceSpeedX = (int) (-player.xSpeed*player.speedMultiplier*3);
 			break;
 		}
-		//player.bounceSpeedX = -player.xSpeed*player.speedMultiplier*3;
-		//player.bounceSpeedY = -player.ySpeed*player.speedMultiplier*3;
 	}
 	private void initSounds() {
-		soundPool = new SoundPool(4, AudioManager.STREAM_MUSIC, 100);
-		soundPoolMap = new HashMap<Integer, Integer>();
-		soundPoolMap.put(SPEED_UP_SOUND, soundPool.load(getContext(), R.raw.coindrop, 1));
-		soundPoolMap.put(SLOW_DOWN_SOUND, soundPool.load(getContext(), R.raw.slowdown, 1));
-		soundPoolMap.put(BOUNCE_SOUND,soundPool.load(getContext(), R.raw.bounce, 1));
-		soundPoolMap.put(FREEZE_POWER_SOUND,soundPool.load(getContext(), R.raw.freezepowersound, 1));
-		soundPoolMap.put(SHRINK_SOUND, soundPool.load(getContext(), R.raw.shrink,1));
-		soundPoolMap.put(BACKGROUND_ONE, soundPool.load(getContext(), R.raw.backgroundmusicone,1));
+		
+
 	}
 	public void playSound(int sound) {
 		/* Updated: The next 4 lines calculate the current volume in a scale of 0.0 to 1.0 */
@@ -606,7 +638,7 @@ public class GameView extends SurfaceView implements OnTouchListener  {
 	public void usePowerUp(String powerUp){
 		if(powerUp.equals("shrinkpower")){
 			if(targetReticle.getTarget()!=null){
-			mobilePowerUps.add(new ShrinkRaySprite(getResources(),new Coordinate(player.x,player.y), targetReticle.getTarget()));
+				mobilePowerUps.add(new ShrinkRaySprite(getResources(),new Coordinate(player.x,player.y), targetReticle.getTarget()));
 			}
 		}
 		else{
@@ -694,7 +726,39 @@ public class GameView extends SurfaceView implements OnTouchListener  {
 		if(badGuyLocs.size()>0){
 			targetReticle.setTarget(badGuyLocs.get(curTar));
 		}
-		
+
+	}
+
+	public void updateOnScreenScore(Coordinate coordinate, String text){
+		((BounceGameActivity) getContext()).updateOnScreenScore(coordinate, "+10");
+	}
+
+	public void enableShield() {
+		player.enableShield(true);
+	}
+
+	public void useNuke(){
+		Nuke nuke = new Nuke(getResources());
+		specialEffects.add(nuke);
+		playSound(NUKE_SOUND);
+		for(EnemySprite badGuy: badGuyLocs){
+			specialEffects.add(new BadGuySpecialEffect(getResources(),badGuy));
+		}
+		badGuyLocs.clear();
+
+	}
+
+	public void goToStats(){
+		ArrayList<String> statsString = new ArrayList<String>();
+		Resources resource = getResources();
+		//GameStat speedBoosts = new GameStat("Speed Boosts "+ speedBoostCollected, BitmapFactory.decodeResource(resource, R.drawable.speed));
+
+		statsString.add("test");
+		statsString.add("speed Drop");
+		statsString.add("enemies");
+		statsString.add("shields");
+		((BounceGameActivity) getContext()).generateStats(statsString);
+
 	}
 }
 

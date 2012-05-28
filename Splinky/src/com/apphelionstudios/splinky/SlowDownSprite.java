@@ -17,7 +17,7 @@ public class SlowDownSprite extends Sprite {
 	public int turns;
 
 	public SlowDownSprite(Resources resource, Coordinate c){
-		speedDrop = BitmapFactory.decodeResource(resource, R.drawable.slow);
+		speedDrop = BitmapFactory.decodeResource(resource, R.drawable.space_coin);
 		x=c.x;
 		y=c.y;
 		width = speedDrop.getWidth();

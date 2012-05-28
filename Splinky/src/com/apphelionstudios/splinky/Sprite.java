@@ -18,5 +18,8 @@ public abstract class Sprite {
 	public abstract int getX();
 	public abstract int getY();
 	public abstract int getTurns();
+	public Coordinate getCoordinate(){
+		return new Coordinate(getX(), getY());
+	}
 
 }

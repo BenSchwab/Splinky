@@ -15,6 +15,11 @@
             
         </activity>
         <activity
+            android:name="com.apphelionstudios.results.Results" android:screenOrientation="landscape" android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+            android:label="@string/app_name" >
+            
+        </activity>
+        <activity
             android:name=".MainMenu" android:screenOrientation="landscape" android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
             android:label="@string/app_name" >
             <intent-filter>

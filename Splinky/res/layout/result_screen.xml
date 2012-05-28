@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical" >
+
+    <TextView
+        android:layout_width="fill_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:text="Results:"
+        android:textSize="30dp" />
+
+    <ListView
+        android:id="@android:id/list"
+        android:layout_width="fill_parent"
+        android:layout_height="0dp"
+        android:layout_weight="12"
+        android:dividerHeight="3dp"
+        android:fastScrollEnabled="true" >
+    </ListView>
+
+    <LinearLayout
+        android:layout_weight="1"
+        android:layout_width="fill_parent"
+        android:layout_height="0dp"
+        android:orientation="horizontal" >
+
+        <Button
+            android:id="@+id/play_again"
+             android:layout_width="wrap_content"
+        	android:layout_height="fill_parent"
+        	android:text="play again" >
+        </Button>
+            <Button
+            android:id="@+id/to_main_menu"
+             android:layout_width="wrap_content"
+        	android:layout_height="fill_parent"
+        	android:text="main menu" >
+        </Button>
+        <Button
+            android:id="@+id/to_armory"
+             android:layout_width="wrap_content"
+        	android:layout_height="fill_parent"
+        	android:text="armory" >
+        </Button>
+    </LinearLayout>
+
+</LinearLayout>

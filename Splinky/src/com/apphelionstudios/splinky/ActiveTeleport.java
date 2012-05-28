@@ -27,12 +27,12 @@ public class ActiveTeleport extends Sprite {
 	public ActiveTeleport(Resources resource, Coordinate c, boolean isG){
 		greenTeleport = BitmapFactory.decodeResource(resource, R.drawable.greenactiveteleport);
 		blueTeleport = BitmapFactory.decodeResource(resource, R.drawable.blueactiveteleport);
-		x=c.x;
-		y=c.y;
+		x=c.x-blueTeleport.getWidth()/2;
+		y=c.y-blueTeleport.getWidth()/2;
 		width = blueTeleport.getWidth();
 		height = blueTeleport.getHeight();
-		centerX = (2*getX()+getWidth())/2;//adjust algorithm
-		centerY = (2*getY()+getHeight())/2;//adjust algorithm
+		centerX = c.x;//adjust algorithm
+		centerY = c.y;//adjust algorithm
 		turns =0;
 		isLinked=false;
 		isGreen = isG;

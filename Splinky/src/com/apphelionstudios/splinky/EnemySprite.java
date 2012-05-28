@@ -7,6 +7,7 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Rect;
 
 public class EnemySprite extends Sprite {
 	
@@ -112,6 +113,14 @@ public class EnemySprite extends Sprite {
 			return badGuyShrunk;
 		}
 		return null;
+	}
+	public boolean intersects(Sprite c) {
+		if(c instanceof PlayerSprite){
+			Rect r = new Rect(getX() +10, getY()+10, getX()+getWidth()-10, getY()+getHeight()-10); //10 is a lot for small sprite..
+			Rect r2 = new Rect(c.getX(), c.getY(), c.getX()+c.getWidth(), c.getY()+c.getHeight());
+			return r.intersect(r2);
+		}
+		else return super.intersects(c);
 	}
 
 }
