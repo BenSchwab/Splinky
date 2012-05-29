@@ -14,10 +14,10 @@ public class GameResources {
 	public static final int SPEED_UP_SOUND = 1;
 	public static final int SLOW_DOWN_SOUND = 2;
 	public static final int BOUNCE_SOUND =3;
-	private static final int FREEZE_POWER_SOUND = 4;
-	private static final int SHRINK_SOUND = 5;
-	private static final int NUKE_SOUND =6;
-	private static final int BACKGROUND_ONE = 1000;
+	public static final int FREEZE_POWER_SOUND = 4;
+	public static final int SHRINK_SOUND = 5;
+	public static final int NUKE_SOUND =6;
+	public static final int BACKGROUND_ONE = 1000;
 	
 	 private static GameResources instance = null;
 	   public GameResources() {
@@ -30,7 +30,7 @@ public class GameResources {
 	      return instance;
 	   }
 	   public void setUpSounds(Context context){
-		   soundPool = new SoundPool(4, AudioManager.STREAM_MUSIC, 100);
+		   	soundPool = new SoundPool(4, AudioManager.STREAM_MUSIC, 100);
 			soundPoolMap = new HashMap<Integer, Integer>();
 			soundPoolMap.put(SPEED_UP_SOUND, soundPool.load(context, R.raw.coindrop, 1));
 			soundPoolMap.put(SLOW_DOWN_SOUND, soundPool.load(context, R.raw.slowdown, 1));
@@ -39,6 +39,12 @@ public class GameResources {
 			soundPoolMap.put(SHRINK_SOUND, soundPool.load(context, R.raw.shrink,1));
 			soundPoolMap.put(NUKE_SOUND, soundPool.load(context, R.raw.nukesound,1));
 			soundPoolMap.put(BACKGROUND_ONE, soundPool.load(context, R.raw.backgroundmusicone,1));
+	   }
+	   public HashMap<Integer, Integer> getSoundPoolMap(){
+		   return soundPoolMap;
+	   }
+	   public SoundPool getSoundPool(){
+		   return soundPool;
 	   }
 	   
 	

@@ -2,10 +2,23 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:orientation="vertical" >
-    <TextView>
-        
-    </TextView>
+    android:orientation="vertical"
+     android:gravity="center"
+    >
+    <ImageView
+        android:id="@+id/logo_pic"
+        android:contentDescription="results"
+        android:src="@drawable/templogo"
+        android:layout_width="wrap_content"
+        android:layout_height= "0dp"
+        android:layout_weight="30">
+    </ImageView>
     
+
+    <ProgressBar
+        android:id="@+id/splash_progress"
+     	 android:layout_weight="1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
 
 </LinearLayout>

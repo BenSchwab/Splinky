@@ -9,6 +9,7 @@ import com.apphelionstudios.results.Results;
 
 
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -98,6 +99,8 @@ public class GameView extends SurfaceView implements OnTouchListener  {
 	private int teleportsUsed;
 
 	private GameResources gameResources;
+	private SoundPool soundPool;
+	private HashMap<Integer, Integer> soundPoolMap;
 	
 
 	int teleportTimeOut = 0;
@@ -119,7 +122,7 @@ public class GameView extends SurfaceView implements OnTouchListener  {
 				gameLoopThread.setRunning(true);
 				/* Play the sound with the correct volume */
 				//soundPool.setLoop(soundPool.play(soundPoolMap.get(BACKGROUND_ONE), volume, volume, 1, 0, 1f),-1); 
-				playSound(BACKGROUND_ONE);
+				playSound(gameResources.BACKGROUND_ONE);
 				gameLoopThread.start();
 				yTop = 0;
 				yBottom = getHeight();
@@ -170,6 +173,8 @@ public class GameView extends SurfaceView implements OnTouchListener  {
 		touchBuffer =0;
 		playerShield = new PlayerShield(getResources(),player);
 		gameResources = GameResources.getInstance();
+		soundPool = gameResources.getSoundPool();
+		soundPoolMap = gameResources.getSoundPoolMap();
 
 	}
 
@@ -280,7 +285,7 @@ public class GameView extends SurfaceView implements OnTouchListener  {
 			shrinkRay.x = (int) (shrinkRay.x+xUnitVector); //maybe make an intersect method that tells you if two sprites intersect?
 			shrinkRay.y = (int) (shrinkRay.y+yUnitVector);
 			if(badGuy.intersects(shrinkRay)){
-				playSound(SHRINK_SOUND);
+				playSound(gameResources.SHRINK_SOUND);
 				toRemove.add(c);
 				if(badGuy.reduceState()){
 					badGuyLocs.remove(badGuy);
@@ -399,6 +404,7 @@ public class GameView extends SurfaceView implements OnTouchListener  {
 		mHandler.post(new Runnable(){
 			@Override
 			public void run() {
+				/*
 				AlertDialog.Builder builder = new AlertDialog.Builder((BounceGameActivity)getContext());
 				builder.setMessage("Game Over. Would you like to play again?")
 				.setCancelable(false)
@@ -414,7 +420,11 @@ public class GameView extends SurfaceView implements OnTouchListener  {
 					}
 				});
 				AlertDialog alert = builder.create();
-				alert.show();
+				alert.show(); */
+				final Dialog d = new Dialog((BounceGameActivity)getContext(),R.style.CustomDialogTheme);
+				d.setContentView(R.layout.game_over_dialog);
+				d.show();
+
 			}
 		});
 
@@ -623,17 +633,17 @@ public class GameView extends SurfaceView implements OnTouchListener  {
 	}
 	public void speedUpSound() {
 		//playSound(BACKGROUND_ONE);
-		playSound(SPEED_UP_SOUND);
+		playSound(gameResources.SPEED_UP_SOUND);
 
 	} 
 	public void slowDownSound(){
-		playSound(SLOW_DOWN_SOUND);
+		playSound(gameResources.SLOW_DOWN_SOUND);
 	}
 	public void playBounceSound(){
-		playSound(BOUNCE_SOUND);
+		playSound(gameResources.BOUNCE_SOUND);
 	}
 	public void playFreezePowerSound(){
-		playSound(FREEZE_POWER_SOUND);
+		playSound(gameResources.FREEZE_POWER_SOUND);
 	}
 	public void usePowerUp(String powerUp){
 		if(powerUp.equals("shrinkpower")){
@@ -740,7 +750,7 @@ public class GameView extends SurfaceView implements OnTouchListener  {
 	public void useNuke(){
 		Nuke nuke = new Nuke(getResources());
 		specialEffects.add(nuke);
-		playSound(NUKE_SOUND);
+		playSound(gameResources.NUKE_SOUND);
 		for(EnemySprite badGuy: badGuyLocs){
 			specialEffects.add(new BadGuySpecialEffect(getResources(),badGuy));
 		}

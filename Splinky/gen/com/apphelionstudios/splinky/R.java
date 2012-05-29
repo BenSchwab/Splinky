@@ -13,14 +13,16 @@ public final class R {
         public static final int fade_out=0x7f040001;
         public static final int grow=0x7f040002;
         public static final int shrink=0x7f040003;
+        public static final int splash_fade_in=0x7f040004;
     }
     public static final class attr {
     }
     public static final class color {
-        public static final int blue=0x7f060002;
-        public static final int green=0x7f060001;
-        public static final int red=0x7f060000;
-        public static final int white=0x7f060003;
+        public static final int blue=0x7f070002;
+        public static final int green=0x7f070001;
+        public static final int red=0x7f070000;
+        public static final int transwhite=0x7f070004;
+        public static final int white=0x7f070003;
     }
     public static final class drawable {
         public static final int asteroidborder=0x7f020000;
@@ -69,40 +71,44 @@ public final class R {
         public static final int targetreticleswitch=0x7f02002b;
         public static final int teleport=0x7f02002c;
         public static final int teleportdrop=0x7f02002d;
-        public static final int tempsidebar=0x7f02002e;
-        public static final int woodbackground=0x7f02002f;
+        public static final int templogo=0x7f02002e;
+        public static final int tempsidebar=0x7f02002f;
+        public static final int woodbackground=0x7f020030;
     }
     public static final class id {
-        public static final int armory_progress=0x7f080002;
-        public static final int armory_unlock_button=0x7f080003;
-        public static final int buttonOne=0x7f08000b;
-        public static final int buttonThree=0x7f08000d;
-        public static final int buttonTwo=0x7f08000c;
-        public static final int enable_shield=0x7f080006;
-        public static final int game_view=0x7f080008;
-        public static final int multBox=0x7f08000e;
-        public static final int nuke_button=0x7f080007;
-        public static final int onScreenScore=0x7f08000a;
-        public static final int onScreenScoreLinearLayout=0x7f080009;
-        public static final int playGameButton=0x7f080010;
-        public static final int play_again=0x7f080011;
-        public static final int scoreBox=0x7f08000f;
-        public static final int speedBox=0x7f080004;
-        public static final int stat_pic=0x7f080000;
-        public static final int stat_text=0x7f080001;
-        public static final int switch_target=0x7f080005;
-        public static final int to_armory=0x7f080013;
-        public static final int to_main_menu=0x7f080012;
+        public static final int armory_progress=0x7f090002;
+        public static final int armory_unlock_button=0x7f090003;
+        public static final int buttonOne=0x7f09000b;
+        public static final int buttonThree=0x7f09000d;
+        public static final int buttonTwo=0x7f09000c;
+        public static final int enable_shield=0x7f090006;
+        public static final int game_view=0x7f090008;
+        public static final int logo_pic=0x7f090014;
+        public static final int multBox=0x7f09000e;
+        public static final int nuke_button=0x7f090007;
+        public static final int onScreenScore=0x7f09000a;
+        public static final int onScreenScoreLinearLayout=0x7f090009;
+        public static final int playGameButton=0x7f090010;
+        public static final int play_again=0x7f090011;
+        public static final int scoreBox=0x7f09000f;
+        public static final int speedBox=0x7f090004;
+        public static final int splash_progress=0x7f090015;
+        public static final int stat_pic=0x7f090000;
+        public static final int stat_text=0x7f090001;
+        public static final int switch_target=0x7f090005;
+        public static final int to_armory=0x7f090013;
+        public static final int to_main_menu=0x7f090012;
     }
     public static final class layout {
         public static final int armory=0x7f030000;
         public static final int armory_row=0x7f030001;
-        public static final int gamelayout=0x7f030002;
-        public static final int main=0x7f030003;
-        public static final int main_menu=0x7f030004;
-        public static final int result_row=0x7f030005;
-        public static final int result_screen=0x7f030006;
-        public static final int splash=0x7f030007;
+        public static final int game_over_dialog=0x7f030002;
+        public static final int gamelayout=0x7f030003;
+        public static final int main=0x7f030004;
+        public static final int main_menu=0x7f030005;
+        public static final int result_row=0x7f030006;
+        public static final int result_screen=0x7f030007;
+        public static final int splash=0x7f030008;
     }
     public static final class raw {
         public static final int backgroundmusicone=0x7f050000;
@@ -114,7 +120,10 @@ public final class R {
         public static final int slowdown=0x7f050006;
     }
     public static final class string {
-        public static final int app_name=0x7f070001;
-        public static final int hello=0x7f070000;
+        public static final int app_name=0x7f080001;
+        public static final int hello=0x7f080000;
+    }
+    public static final class style {
+        public static final int CustomDialogTheme=0x7f060000;
     }
 }
